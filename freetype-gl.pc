@@ -1,0 +1,6 @@
+Name: freetype-gl
+Description: freetype-gl
+Version: 0.1.0
+Requires: freetype2
+Cflags: -I${pcfiledir}
+Libs: -L${pcfiledir} -lfreetype-gl
