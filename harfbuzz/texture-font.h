@@ -5,7 +5,6 @@
  */
 #ifndef __TEXTURE_FONT_H__
 #define __TEXTURE_FONT_H__
-
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -361,7 +360,7 @@ void
 texture_glyph_delete( texture_glyph_t * );
 
 /** @} */
- 
+
 #define GLYPHS_ITERATOR1(index, name, glyph) \
     for( index = 0; index < vector_size ( glyph ); index++ ) { \
        texture_glyph_t ** __glyphs;

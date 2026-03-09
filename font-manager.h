@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#include "vector.h"
+#include "c-vector.h"
 #include "markup.h"
 #include "texture-font.h"
 #include "texture-atlas.h"
