@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#include "c-vector.h"
+#include "cvector.h"
 #include "markup.h"
 #include "texture-font.h"
 #include "texture-atlas.h"
@@ -56,7 +56,7 @@ typedef struct font_manager_t {
     /**
      * Cached textures.
      */
-    vector_t * fonts;
+    cvector(texture_font_t) fonts;
 
     /**
      * Default glyphs to be loaded when loading a new font.

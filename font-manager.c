@@ -39,7 +39,7 @@ font_manager_new( size_t width, size_t height, size_t depth )
         /* exit( EXIT_FAILURE ); */ /* Never ever exit from a library */
     }
     self->atlas = atlas;
-    self->fonts = vector_new( sizeof(texture_font_t *) );
+    cvector_init( self->fonts, 0, NULL );
     self->cache = strdup( " " );
     return self;
 }
@@ -50,15 +50,14 @@ void
 font_manager_delete( font_manager_t * self )
 {
     size_t i;
-    texture_font_t *font;
     assert( self );
 
-    for( i=0; i<vector_size( self->fonts ); ++i)
-    {
-        font = *(texture_font_t **) vector_get( self->fonts, i );
+    cvector_iterator(texture_font_t) font;
+    cvector_for_each_in(font, self->fonts){
         texture_font_delete( font );
     }
-    vector_delete( self->fonts );
+
+    cvector_clear( self->fonts );
     texture_atlas_delete( self->atlas );
     if( self->cache )
     {
@@ -75,21 +74,20 @@ font_manager_delete_font( font_manager_t * self,
                           texture_font_t * font)
 {
     size_t i;
-    texture_font_t *other;
 
     assert( self );
     assert( font );
 
-    for( i=0; i<self->fonts->size;++i )
-    {
-        other = (texture_font_t *) vector_get( self->fonts, i );
+    cvector_iterator(texture_font_t) other;
+    cvector_for_each_in(other, self->fonts){
         if ( (strcmp(font->filename, other->filename) == 0)
                && ( font->size == other->size) )
         {
-            vector_erase( self->fonts, i);
+            cvector_erase( self->fonts, i);
             break;
         }
     }
+
     texture_font_delete( font );
 }
 
@@ -102,21 +100,21 @@ font_manager_get_from_filename( font_manager_t *self,
                                 const float size )
 {
     size_t i;
-    texture_font_t *font;
 
     assert( self );
-    for( i=0; i<vector_size(self->fonts); ++i )
-    {
-        font = * (texture_font_t **) vector_get( self->fonts, i );
+
+    cvector_iterator(texture_font_t) font;
+    cvector_for_each_in(font, self->fonts){
         if( (strcmp(font->filename, filename) == 0) && ( font->size == size) )
         {
             return font;
         }
     }
+
     font = texture_font_new_from_file( self->atlas, size, filename );
     if( font )
     {
-        vector_push_back( self->fonts, &font );
+        cvector_push_back( self->fonts, *font );
         texture_font_load_glyphs( font, self->cache );
         return font;
     }

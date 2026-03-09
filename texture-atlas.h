@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-#include "vector.h"
+#include "cvector.h"
 #include "cgeom.h"
 
 #ifdef __cplusplus
@@ -78,7 +78,7 @@ typedef struct texture_atlas_t
     /**
      * Allocated nodes
      */
-    vector_t * nodes;
+    cvector(struct vec3i) nodes;
 
     /**
      *  Width (in pixels) of the underlying texture

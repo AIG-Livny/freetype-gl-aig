@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#include "vector.h"
+#include "cvector.h"
 #include "texture-atlas.h"
 
 #ifndef __THREAD
@@ -176,7 +176,7 @@ typedef struct texture_glyph_t
     /**
      * A vector of kerning pairs relative to this glyph.
      */
-    vector_t * kerning;
+    cvector(float**) kerning;
 
     /**
      * Mode this glyph was rendered
@@ -264,13 +264,13 @@ typedef struct texture_font_t
      * Vector of glyphs contained in this font.
      * This is actually a two-stage table, indexing into 256 glyphs each
      */
-    vector_t * glyphs;
+    cvector(cvector(texture_glyph_t)) glyphs;
 
     /**
      * Atlas structure to store glyphs data.
      */
     texture_atlas_t * atlas;
-    
+
     /**
      * font location
      */
@@ -296,7 +296,7 @@ typedef struct texture_font_t
      */
 
     texture_font_library_t * library;
-  
+
     /**
      * Font size
      */
@@ -430,7 +430,7 @@ typedef struct texture_font_t
  */
 
   extern __THREAD texture_font_library_t * freetype_gl_library;
-  
+
 /**
  * This function creates a new texture font from given filename and size.  The
  * texture atlas is used to store glyph on demand. Note the depth of the atlas
@@ -579,10 +579,10 @@ typedef struct texture_font_t
  texture_glyph_t *
  texture_font_find_glyph( texture_font_t * self,
                           const char * codepoint );
-    
-/** 
+
+/**
  * Index a glyph in a font
- * 
+ *
  * @param self      A valid texture font
  * @param glyph     The glyph to index in the font
  * @param codepoint The codepoint to insert into
@@ -593,7 +593,7 @@ int
 texture_font_index_glyph( texture_font_t * self,
 			  texture_glyph_t * glyph,
 			  uint32_t codepoint );
-    
+
 /**
  * Request the loading of a given glyph.
  *
@@ -622,7 +622,7 @@ texture_font_get_glyph_gi( texture_font_t * self,
 			   uint32_t glyph_index );
 
 /**
- * Request an already loaded glyph from the font. 
+ * Request an already loaded glyph from the font.
  *
  * @param self         A valid texture font
  * @param glyph_index  Font's character codepoint to be found
@@ -684,7 +684,7 @@ texture_font_load_glyph_gi( texture_font_t * self,
  */
   void
   texture_font_enlarge_glyphs( texture_font_t * self, float mulw, float mulh );
-  
+
 /**
  * Increases the size of a fonts texture atlas
  *
@@ -737,10 +737,10 @@ texture_glyph_clone( texture_glyph_t* self );
 /** @} */
 
 #define GLYPHS_ITERATOR1(index, name, glyph) \
-    for( index = 0; index < vector_size ( glyph ); index++ ) { \
+    for( index = 0; index < cvector_size ( glyph ); index++ ) { \
 	texture_glyph_t ** __glyphs;
 #define GLYPHS_ITERATOR2(index, name, glyph) \
-	if(( __glyphs = *(texture_glyph_t *** ) vector_get ( glyph, index ) )) { \
+	if(( __glyphs = *(texture_glyph_t *** )  glyph[index] ) ) { \
 	    int __i;							\
 	    for( __i = 0; __i < 0x100; __i++ ) {			\
 		if(( name = __glyphs[__i] ))

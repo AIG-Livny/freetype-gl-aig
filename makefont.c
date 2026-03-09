@@ -5,7 +5,7 @@
  */
 #include "opengl.h"
 #include "cgeom.h"
-#include "vector.h"
+#include "cvector.h"
 #include "freetype-gl.h"
 
 #include <errno.h>
@@ -37,21 +37,21 @@ void print_glyph(FILE * file, texture_glyph_t * glyph)
     fprintf( file, "%d, %d, ", glyph->offset_x, glyph->offset_y );
     fprintf( file, "%ff, %ff, ", glyph->advance_x, glyph->advance_y );
     fprintf( file, "%ff, %ff, %ff, %ff, ", glyph->s0, glyph->t0, glyph->s1, glyph->t1 );
-    fprintf( file, "%" PRIzu ", ", vector_size(glyph->kerning) );
-    if (vector_size(glyph->kerning) == 0) {
+    fprintf( file, "%" PRIzu ", ", cvector_size(glyph->kerning) );
+    if (cvector_size(glyph->kerning) == 0) {
 	fprintf( file, "{{0}}" );
     } else {
 	int k;
 	fprintf( file, "{ " );
-	for( k=0; k < vector_size(glyph->kerning); ++k ) {
-	    float *kerning = *(float **) vector_get( glyph->kerning, k);
+	for( k=0; k < cvector_size(glyph->kerning); ++k ) {
+	    float *kerning = *(float **) glyph->kerning[k];
 	    int l;
 	    fprintf( file, "{" );
 	    for( l=0; l<0xff; l++ )
 		fprintf( file, " %ff,", kerning[l] );
 	    fprintf( file, " %ff }", kerning[0xFF] );
 
-	    if( k < (vector_size(glyph->kerning)-1))
+	    if( k < (cvector_size(glyph->kerning)-1))
 		fprintf( file, ",\n" );
 	}
 	fprintf( file, " }" );
@@ -336,21 +336,21 @@ int main( int argc, char **argv )
             rendermodes[rendermode] );
 
     size_t texture_size = atlas->width * atlas->height * atlas->depth;
-    size_t glyph_count = font->glyphs->size;
+    size_t glyph_count = cvector_size(font->glyphs);
     size_t max_kerning_count = 1;
-    for( i=0; i < glyph_count; ++i )
-    {
-        texture_glyph_t **glyph_0x100 = *(texture_glyph_t ***) vector_get( font->glyphs, i );
-	if(glyph_0x100) {
-	    for( j=0; j < 0x100; ++j ) {
-		texture_glyph_t *glyph;
-		if(( glyph = glyph_0x100[j] )) {
-		    size_t new_max = vector_size(glyph->kerning);
-		    if( new_max > max_kerning_count )
-			max_kerning_count = new_max;
-		}
+
+    cvector_iterator(cvector(texture_glyph_t)) glyph_0x100;
+    cvector_for_each_in(glyph_0x100, font->glyphs){
+        if(glyph_0x100) {
+	        for( j=0; j < 0x100; ++j ) {
+		        texture_glyph_t *glyph;
+		        if(( glyph = glyph_0x100[j] )) {
+		                size_t new_max = cvector_size(glyph->kerning);
+		                if( new_max > max_kerning_count )
+		            	max_kerning_count = new_max;
+		        }
+	        }
 	    }
-	}
     }
 
 
