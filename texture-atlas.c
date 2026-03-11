@@ -1,8 +1,8 @@
-/* Freetype GL - A C OpenGL Freetype engine
- *
- * Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
- * file `LICENSE` for more details.
- */
+//  Freetype GL - A C OpenGL Freetype engine
+//
+//  Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
+//  file `LICENSE` for more details.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +11,7 @@
 #include "texture-atlas.h"
 #include "texture-font.h"
 #include "ftgl-utils.h"
+#include "cvector.h"
 
 // -------------------------------------------------- texture_atlas_special ---
 
@@ -49,13 +50,12 @@ texture_atlas_new( const size_t width,
     struct vec3i node = {{1,1,width-2}};
 
     assert( (depth == 1) || (depth == 3) || (depth == 4) );
-    if( self == NULL)
-    {
+    if( self == NULL) {
         freetype_gl_error( Out_Of_Memory );
         return NULL;
-        /* exit( EXIT_FAILURE ); */ /* Never exit from a library */
+        // exit( EXIT_FAILURE ); // Never exit from a library
     }
-    self->nodes = vector_new( sizeof(struct vec3i) );
+    self->nodes = NULL;
     self->used = 0;
     self->width = width;
     self->height = height;
@@ -63,7 +63,7 @@ texture_atlas_new( const size_t width,
     self->id = 0;
     self->modified = 1;
 
-    vector_push_back( self->nodes, &node );
+    cvector_push_back( self->nodes, node );
     self->data = (unsigned char *)
         calloc( width*height*depth, sizeof(unsigned char) );
 
@@ -84,7 +84,7 @@ void
 texture_atlas_delete( texture_atlas_t *self )
 {
     assert( self );
-    vector_delete( self->nodes );
+    cvector_free( self->nodes );
     texture_glyph_delete( self->special );
     if( self->data )
     {
@@ -144,7 +144,7 @@ texture_atlas_fit( texture_atlas_t * self,
 
     assert( self );
 
-    node = (struct vec3i *) (vector_get( self->nodes, index ));
+    node = &self->nodes[index];
     x = node->x;
     y = node->y;
     width_left = width;
@@ -157,7 +157,7 @@ texture_atlas_fit( texture_atlas_t * self,
     y = node->y;
     while( width_left > 0 )
     {
-	node = (struct vec3i *) (vector_get( self->nodes, i ));
+	node = &self->nodes[i];
 	if( node->y > y )
 	{
 	    y = node->y;
@@ -182,14 +182,14 @@ texture_atlas_merge( texture_atlas_t * self )
 
     assert( self );
 
-    for( i=0; i< self->nodes->size-1; ++i )
+    for( i=0; i< cvector_size( self->nodes )-1; ++i )
     {
-        node = (struct vec3i *) (vector_get( self->nodes, i ));
-        next = (struct vec3i *) (vector_get( self->nodes, i+1 ));
+        node = &self->nodes[i];
+        next = &self->nodes[i+1];
         if( node->y == next->y )
 	{
             node->z += next->z;
-            vector_erase( self->nodes, i+1 );
+            cvector_erase( self->nodes, i+1 );
             --i;
         }
     }
@@ -213,12 +213,12 @@ texture_atlas_get_region( texture_atlas_t * self,
     best_height = UINT_MAX;
     best_index  = -1;
     best_width = UINT_MAX;
-    for( i=0; i<self->nodes->size; ++i )
+    for( i=0; i< cvector_size(self->nodes); ++i )
     {
         y = texture_atlas_fit( self, i, width, height );
         if( y >= 0 )
 	{
-            node = (struct vec3i *) vector_get( self->nodes, i );
+            node = &self->nodes[i];
             if( ( (y + height) < best_height ) ||
                 ( ((y + height) == best_height) && (node->z > 0 && (size_t)node->z < best_width)) ) {
                 best_height = y + height;
@@ -248,13 +248,13 @@ texture_atlas_get_region( texture_atlas_t * self,
     node->x = region.x;
     node->y = region.y + height;
     node->z = width;
-    vector_insert( self->nodes, best_index, node );
+    cvector_insert( self->nodes, best_index, *node );
     free( node );
 
-    for( i = best_index+1; i < self->nodes->size; ++i )
+    for( i = best_index+1; i < cvector_size(self->nodes); ++i )
     {
-        node = (struct vec3i *) vector_get( self->nodes, i );
-        prev = (struct vec3i *) vector_get( self->nodes, i-1 );
+        node = &self->nodes[i];
+        prev = &self->nodes[i-1];
 
         if (node->x < (prev->x + prev->z) )
 	{
@@ -262,7 +262,7 @@ texture_atlas_get_region( texture_atlas_t * self,
             node->x += shrink;
             node->z -= shrink;
             if (node->z <= 0) {
-                vector_erase( self->nodes, i );
+                cvector_erase( self->nodes, i );
                 --i;
             }
             else
@@ -291,13 +291,13 @@ texture_atlas_clear( texture_atlas_t * self )
     assert( self );
     assert( self->data );
 
-    vector_clear( self->nodes );
+    cvector_clear( self->nodes );
     self->used = 0;
     // We want a one pixel border around the whole atlas to avoid any artefact when
     // sampling texture
     node.z = self->width-2;
 
-    vector_push_back( self->nodes, &node );
+    cvector_push_back( self->nodes, node );
     memset( self->data, 0, self->width*self->height*self->depth );
 }
 
@@ -326,7 +326,7 @@ void texture_atlas_enlarge_texture ( texture_atlas_t* self, size_t width_new, si
         node.x = width_old - 1;
         node.y = 1;
         node.z = width_new - width_old;
-        vector_push_back(self->nodes, &node);
+        cvector_push_back(self->nodes, node);
     }
     //copy over data from the old buffer, skipping first row and column because of the margin
     size_t pixel_size = sizeof(char) * self->depth;

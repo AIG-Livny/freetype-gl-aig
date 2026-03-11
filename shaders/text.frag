@@ -1,8 +1,8 @@
-/* Freetype GL - A C OpenGL Freetype engine
- *
- * Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
- * file `LICENSE` for more details.
- */
+//  Freetype GL - A C OpenGL Freetype engine
+//
+//  Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
+//  file `LICENSE` for more details.
+
 vec3
 energy_distribution( vec4 previous, vec4 current, vec4 next )
 {
@@ -116,7 +116,7 @@ void main()
     vec3 color = vec3(r,g,b); //pow( vec3(r,g,b), vec3(1.0/vgamma));
     gl_FragColor.rgb = color;
     gl_FragColor.a = (color.r+color.g+color.b)/3.0 * vcolor.a;
-    */
+// /
 
 //    gl_FragColor = vec4(pow(vec3(r,g,b),vec3(1.0/vgamma)),a);
     //gl_FragColor = vec4(r,g,b,a);

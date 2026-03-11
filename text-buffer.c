@@ -1,8 +1,8 @@
-/* Freetype GL - A C OpenGL Freetype engine
- *
- * Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
- * file `LICENSE` for more details.
- */
+//  Freetype GL - A C OpenGL Freetype engine
+//
+//  Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
+//  file `LICENSE` for more details.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -36,7 +36,7 @@ text_buffer_new( void )
     self->base_color.b = 0.0;
     self->base_color.a = 1.0;
     self->line_descender = 0;
-    self->lines = vector_new( sizeof(line_info_t) );
+    self->lines = NULL;
     self->bounds.left   = 0.0;
     self->bounds.top    = 0.0;
     self->bounds.width  = 0.0;
@@ -48,7 +48,7 @@ text_buffer_new( void )
 void
 text_buffer_delete( text_buffer_t * self )
 {
-    vector_delete( self->lines );
+    cvector_free( self->lines );
     vertex_buffer_delete( self->buffer );
     free( self );
 }
@@ -63,7 +63,7 @@ text_buffer_clear( text_buffer_t * self )
     self->line_start = 0;
     self->line_ascender = 0;
     self->line_descender = 0;
-    vector_clear( self->lines );
+    cvector_clear( self->lines );
     self->bounds.left   = 0.0;
     self->bounds.top    = 0.0;
     self->bounds.width  = 0.0;
@@ -102,13 +102,13 @@ text_buffer_move_last_line( text_buffer_t * self, float dy )
 {
     size_t i;
     int j;
-    for( i=self->line_start; i < vector_size( self->buffer->items ); ++i )
+    for( i=self->line_start; i < cvector_size( self->buffer->items ); ++i )
     {
-        struct vec4i *item = (struct vec4i *) vector_get( self->buffer->items, i);
+        struct vec4i *item = (struct vec4i *) cvector_at( self->buffer->items, i);
         for( j=item->vstart; j<item->vstart+item->vcount; ++j)
         {
             glyph_vertex_t * vertex =
-                (glyph_vertex_t *)  vector_get( self->buffer->vertices, j );
+                (glyph_vertex_t *)  gcvector_at( self->buffer->vertices, j );
             vertex->y -= dy;
         }
     }
@@ -140,7 +140,7 @@ text_buffer_finish_line( text_buffer_t * self, struct vec2f * pen, bool advanceP
     line_info.bounds.width = line_width;
     line_info.bounds.height = line_height;
 
-    vector_push_back( self->lines,  &line_info);
+    cvector_push_back( self->lines,  line_info);
 
 
     if (line_left < self->bounds.left)
@@ -172,7 +172,7 @@ text_buffer_finish_line( text_buffer_t * self, struct vec2f * pen, bool advanceP
 
     self->line_descender = 0;
     self->line_ascender = 0;
-    self->line_start = vector_size( self->buffer->items );
+    self->line_start = cvector_size( self->buffer->items );
     self->line_left = pen->x;
 }
 
@@ -465,7 +465,7 @@ text_buffer_align( text_buffer_t * self, struct vec2f * pen,
         return;
     }
 
-    size_t total_items = vector_size( self->buffer->items );
+    size_t total_items = cvector_size( self->buffer->items );
     if ( self->line_start != total_items )
     {
         text_buffer_finish_line( self, pen, false );
@@ -485,18 +485,18 @@ text_buffer_align( text_buffer_t * self, struct vec2f * pen,
     line_info_t* line_info;
     size_t lines_count, line_end;
 
-    lines_count = vector_size( self->lines );
+    lines_count = cvector_size( self->lines );
     for ( i = 0; i < lines_count; ++i )
     {
-        line_info = (line_info_t*)vector_get( self->lines, i );
+        line_info = (line_info_t*)cvector_at( self->lines, i );
 
         if ( i + 1 < lines_count )
         {
-            line_end = ((line_info_t*)vector_get( self->lines, i + 1 ))->line_start;
+            line_end = ((line_info_t*)cvector_at( self->lines, i + 1 ))->line_start;
         }
         else
         {
-            line_end = vector_size( self->buffer->items );
+            line_end = cvector_size( self->buffer->items );
         }
 
         line_right = line_info->bounds.left + line_info->bounds.width;
@@ -516,11 +516,11 @@ text_buffer_align( text_buffer_t * self, struct vec2f * pen,
 
         for( j=line_info->line_start; j < line_end; ++j )
         {
-            struct vec4i *item = (struct vec4i *) vector_get( self->buffer->items, j);
+            struct vec4i *item = (struct vec4i *) cvector_at( self->buffer->items, j);
             for( k=item->vstart; k<item->vstart+item->vcount; ++k)
             {
                 glyph_vertex_t * vertex =
-                                   (glyph_vertex_t *)vector_get( self->buffer->vertices, k );
+                                   (glyph_vertex_t *)gcvector_at( self->buffer->vertices, k );
                 vertex->x += dx;
             }
         }
@@ -530,7 +530,7 @@ text_buffer_align( text_buffer_t * self, struct vec2f * pen,
 struct vec4f
 text_buffer_get_bounds( text_buffer_t * self, struct vec2f * pen )
 {
-    size_t total_items = vector_size( self->buffer->items );
+    size_t total_items = cvector_size( self->buffer->items );
     if ( self->line_start != total_items )
     {
         text_buffer_finish_line( self, pen, false );

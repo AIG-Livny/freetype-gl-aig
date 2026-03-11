@@ -1,8 +1,8 @@
-/* Freetype GL - A C OpenGL Freetype engine
- *
- * Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
- * file `LICENSE` for more details.
- */
+//  Freetype GL - A C OpenGL Freetype engine
+//
+//  Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
+//  file `LICENSE` for more details.
+
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;

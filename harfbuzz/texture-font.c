@@ -1,8 +1,8 @@
-/* Freetype GL - A C OpenGL Freetype engine
- *
- * Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
- * file `LICENSE` for more details.
- */
+//  Freetype GL - A C OpenGL Freetype engine
+//
+//  Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
+//  file `LICENSE` for more details.
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_STROKER_H
@@ -41,7 +41,7 @@ texture_font_load_face(texture_font_t *self, float size,
     assert(library);
     assert(size);
 
-    /* Initialize library */
+    // Initialize library
     error = FT_Init_FreeType(library);
     if(error) {
 	freetype_error( error, "FT_Error (line %d, code 0x%02x) : %s\n",
@@ -49,7 +49,7 @@ texture_font_load_face(texture_font_t *self, float size,
         return 0;
     }
 
-    /* Load face */
+    // Load face
     switch (self->location) {
     case TEXTURE_FONT_FILE:
         error = FT_New_Face(*library, self->filename, 0, &self->ft_face);
@@ -68,14 +68,14 @@ texture_font_load_face(texture_font_t *self, float size,
         return 0;
     }
 
-    /* Select charmap */
+    // Select charmap
     error = FT_Select_Charmap(self->ft_face, FT_ENCODING_UNICODE);
     if(error) {
 	freetype_error( error, "FT_Error (line %d, code 0x%02x) : %s\n",
 			__LINE__, FT_Errors[error].code, FT_Errors[error].message);
     }
 
-    /* Set char size */
+    // Set char size
     error = FT_Set_Char_Size(self->ft_face, 0, (int)(self->size*64), DPI * self->hres, DPI);
 
     if(error) {
@@ -86,7 +86,7 @@ texture_font_load_face(texture_font_t *self, float size,
         return 0;
     }
 
-    /* Set transform matrix */
+    // Set transform matrix
     FT_Set_Transform(self->ft_face, &matrix, NULL);
 
     return 1;
@@ -161,7 +161,7 @@ texture_font_init(texture_font_t *self)
     if (!texture_font_load_face(self, self->size * 100.f, &library))
         return -1;
 
-    /* Set harfbuzz font */
+    // Set harfbuzz font
     self->hb_ft_font = hb_ft_font_create( self->ft_face, NULL );
 
     return 0;
@@ -295,7 +295,7 @@ void texture_font_index_glyph( texture_font_t * self,
     glyph_index1 = (texture_glyph_t ***) vector_get( self->glyphs, i );
 
     if(!*glyph_index1) {
-	*glyph_index1 = calloc( 0x100, sizeof(texture_glyph_t*) );
+// glyph_index1 = calloc( 0x100, sizeof(texture_glyph_t*) );
     }
 
     (*glyph_index1)[j] = glyph;
@@ -337,22 +337,22 @@ texture_font_load_glyphs( texture_font_t * self,
 
     FT_Init_FreeType(&library);
 
-    /* Create a buffer for harfbuzz to use */
+    // Create a buffer for harfbuzz to use
     buffer = hb_buffer_create();
 
     hb_buffer_set_language( buffer,
                             hb_language_from_string(language, strlen(language)) );
 
-    /* Layout the text */
+    // Layout the text
     hb_buffer_add_utf8( buffer, codepoints, strlen(codepoints), 0, strlen(codepoints) );
-    /* Guess text script and direction */
+    // Guess text script and direction
     hb_buffer_guess_segment_properties( buffer );
     hb_shape( self->hb_ft_font, buffer, NULL, 0 );
 
     glyph_info = hb_buffer_get_glyph_infos(buffer, &glyph_count);
 
     for( i = 0; i < glyph_count; ++i ) {
-        /* Check if codepoint has been already loaded */
+        // Check if codepoint has been already loaded
         if( texture_font_find_glyph( self, glyph_info[i].codepoint ) )
             continue;
 
@@ -521,10 +521,10 @@ texture_font_load_glyphs( texture_font_t * self,
         }
     }
 
-    /* clean up the buffer, but don't kill it just yet */
+    // clean up the buffer, but don't kill it just yet
     hb_buffer_reset(buffer);
 
-    /* Cleanup */
+    // Cleanup
     hb_buffer_destroy( buffer );
 
     return missed;
@@ -542,6 +542,6 @@ texture_font_get_glyph( texture_font_t * self,
     assert( self->filename );
     assert( self->atlas );
 
-    /* Check if codepoint has been already loaded */
+    // Check if codepoint has been already loaded
     return texture_font_find_glyph(self, codepoint );
 }

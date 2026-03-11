@@ -1,8 +1,8 @@
-/* Freetype GL - A C OpenGL Freetype engine
- *
- * Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
- * file `LICENSE` for more details.
- */
+//  Freetype GL - A C OpenGL Freetype engine
+//
+//  Distributed under the OSI-approved BSD 2-Clause License.  See accompanying
+//  file `LICENSE` for more details.
+
 #ifndef __MARKUP_H__
 #define __MARKUP_H__
 
@@ -17,145 +17,105 @@ extern "C" {
 namespace ftgl {
 #endif
 
-/**
- * @file   markup.h
- * @author Nicolas Rougier (Nicolas.Rougier@inria.fr)
- *
- * @defgroup markup Markup
- *
- * Simple structure that describes text properties.
- *
- * <b>Example Usage</b>:
- * @code
- * #include "markup.h"
- *
- * ...
- *
- * struct vec4f black  = {{0.0, 0.0, 0.0, 1.0}};
- * struct vec4f white  = {{1.0, 1.0, 1.0, 1.0}};
- * struct vec4f none   = {{1.0, 1.0, 1.0, 0.0}};
- *
- * markup_t normal = {
- *     .family  = "Droid Serif",
- *     .size = 24.0,
- *     .bold = 0,
- *     .italic = 0,
- *     .spacing = 1.0,
- *     .gamma = 1.0,
- *     .foreground_color = black, .background_color    = none,
- *     .underline        = 0,     .underline_color     = black,
- *     .overline         = 0,     .overline_color      = black,
- *     .strikethrough    = 0,     .strikethrough_color = black,
- *     .font = 0,
- * };
- *
- * ...
- *
- * @endcode
- *
- * @{
- */
+//  @file   markup.h
+//  @author Nicolas Rougier (Nicolas.Rougier@inria.fr)
+//
+//  @defgroup markup Markup
+//
+//  Simple structure that describes text properties.
+//
+//  <b>Example Usage</b>:
+//  @code
+//  #include "markup.h"
+//
+//  ...
+//
+//  struct vec4f black  = {{0.0, 0.0, 0.0, 1.0}};
+//  struct vec4f white  = {{1.0, 1.0, 1.0, 1.0}};
+//  struct vec4f none   = {{1.0, 1.0, 1.0, 0.0}};
+//
+//  markup_t normal = {
+//      .family  = "Droid Serif",
+//      .size = 24.0,
+//      .bold = 0,
+//      .italic = 0,
+//      .spacing = 1.0,
+//      .gamma = 1.0,
+//      .foreground_color = black, .background_color    = none,
+//      .underline        = 0,     .underline_color     = black,
+//      .overline         = 0,     .overline_color      = black,
+//      .strikethrough    = 0,     .strikethrough_color = black,
+//      .font = 0,
+//  };
+//
+//  ...
+//
+//  @endcode
+//
+//  @{
 
 
-/**
- * Simple structure that describes text properties.
- */
+//  Simple structure that describes text properties.
 typedef struct markup_t
 {
-    /**
-     * A font family name such as "normal", "sans", "serif" or "monospace".
-     */
+//  A font family name such as "normal", "sans", "serif" or "monospace".
     char * family;
 
-    /**
-     * Font size.
-     */
+//  Font size.
     float size;
 
-    /**
-     * Whether text is bold.
-     */
+//  Whether text is bold.
     int bold;
 
-    /**
-     * Whether text is italic.
-     */
+//  Whether text is italic.
     int italic;
 
-    /**
-     * Spacing between letters.
-     */
+//  Spacing between letters.
     float spacing;
 
-    /**
-     * Gamma correction.
-     */
+//  Gamma correction.
     float gamma;
 
-    /**
-     * Text color.
-     */
+//  Text color.
     struct vec4f foreground_color;
 
-    /**
-     * Background color.
-     */
+//  Background color.
     struct vec4f background_color;
 
-    /**
-     * Whether outline is active.
-     */
+//  Whether outline is active.
     int outline;
 
-    /**
-     * Outline color.
-     */
+//  Outline color.
     struct vec4f outline_color;
 
-    /**
-     * Whether underline is active.
-     */
+//  Whether underline is active.
     int underline;
 
-    /**
-     * Underline color.
-     */
+//  Underline color.
     struct vec4f underline_color;
 
-    /**
-     * Whether overline is active.
-     */
+//  Whether overline is active.
     int overline;
 
-    /**
-     * Overline color.
-     */
+//  Overline color.
     struct vec4f overline_color;
 
-    /**
-     * Whether strikethrough is active.
-     */
+//  Whether strikethrough is active.
     int strikethrough;
 
-    /**
-     * Strikethrough color.
-     */
+//  Strikethrough color.
     struct vec4f strikethrough_color;
 
-    /**
-     * Pointer on the corresponding font (family/size/bold/italic)
-     */
+//  Pointer on the corresponding font (family/size/bold/italic)
     texture_font_t * font;
 
 } markup_t;
 
-/**
-  * Default markup
-  */
+//  Default markup
 extern markup_t default_markup;
 
 
-/** @} */
+// @}
 
 #ifdef __cplusplus
 }

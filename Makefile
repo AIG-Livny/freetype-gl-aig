@@ -9,6 +9,7 @@ ARFLAGS 		=	rcs
 
 LIBS_URLS			+=	https://github.com/AIG-Livny/cgeom.git
 LIBS_HEADERS_URLS	+=	https://github.com/eteran/c-vector.git
+LIBS_HEADERS_URLS	+=	https://github.com/AIG-Livny/gc-vector.git
 
 ###
 
@@ -25,6 +26,7 @@ PC_PATTERN = $(addsuffix /*.pc, $(LIBS_PATHS))
 CFLAGS += $(shell pkg-config --cflags $(PC_PATTERN) $(SYSTEM_LIBS))
 
 $(foreach url,$(LIBS_URLS),$(eval URL_$(shell basename $(url) .git) := $(url)))
+$(foreach url,$(LIBS_HEADERS_URLS),$(eval URL_$(shell basename $(url) .git) := $(url)))
 
 INCLUDE_DIRS += $(LIBS_HEADERS_PATHS)
 CFLAGS += $(addprefix -I, $(INCLUDE_DIRS))
@@ -34,7 +36,7 @@ CFLAGS += $(addprefix -I, $(INCLUDE_DIRS))
 all: $(LIBS_HEADERS_PATHS) $(LIBS_PATHS) $(TARGET)
 
 clean:
-	rm -rf $(OBJ_PATH) $(LIBS_PATHS)
+	rm -rf $(OBJ_PATH) $(LIBS_PATHS) $(LIBS_HEADERS_PATHS)
 
 cleanall: clean
 	rm -rf $(TARGET)

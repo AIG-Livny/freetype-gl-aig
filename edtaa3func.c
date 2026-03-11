@@ -1,67 +1,62 @@
-/*
- * edtaa3()
- *
- * Sweep-and-update Euclidean distance transform of an
- * image. Positive pixels are treated as object pixels,
- * zero or negative pixels are treated as background.
- * An attempt is made to treat antialiased edges correctly.
- * The input image must have pixels in the range [0,1],
- * and the antialiased image should be a box-filter
- * sampling of the ideal, crisp edge.
- * If the antialias region is more than 1 pixel wide,
- * the result from this transform will be inaccurate.
- *
- * By Stefan Gustavson (stefan.gustavson@gmail.com).
- *
- * Originally written in 1994, based on a verbal
- * description of the SSED8 algorithm published in the
- * PhD dissertation of Ingemar Ragnemalm. This is his
- * algorithm, I only implemented it in C.
- *
- * Updated in 2004 to treat border pixels correctly,
- * and cleaned up the code to improve readability.
- *
- * Updated in 2009 to handle anti-aliased edges.
- *
- * Updated in 2011 to avoid a corner case infinite loop.
- *
- * Updated 2012 to change license from LGPL to MIT.
- *
- * Updated 2014 to fix a bug with the 'gy' gradient computation.
- *
- */
+//
+//  edtaa3()
+//
+//  Sweep-and-update Euclidean distance transform of an
+//  image. Positive pixels are treated as object pixels,
+//  zero or negative pixels are treated as background.
+//  An attempt is made to treat antialiased edges correctly.
+//  The input image must have pixels in the range [0,1],
+//  and the antialiased image should be a box-filter
+//  sampling of the ideal, crisp edge.
+//  If the antialias region is more than 1 pixel wide,
+//  the result from this transform will be inaccurate.
+//
+//  By Stefan Gustavson (stefan.gustavson@gmail.com).
+//
+//  Originally written in 1994, based on a verbal
+//  description of the SSED8 algorithm published in the
+//  PhD dissertation of Ingemar Ragnemalm. This is his
+//  algorithm, I only implemented it in C.
+//
+//  Updated in 2004 to treat border pixels correctly,
+//  and cleaned up the code to improve readability.
+//
+//  Updated in 2009 to handle anti-aliased edges.
+//
+//  Updated in 2011 to avoid a corner case infinite loop.
+//
+//  Updated 2012 to change license from LGPL to MIT.
+//
+//  Updated 2014 to fix a bug with the 'gy' gradient computation.
 
-/*
- Copyright (C) 2009-2012 Stefan Gustavson (stefan.gustavson@gmail.com)
- The code in this file is distributed under the MIT license:
 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- */
+// Copyright (C) 2009-2012 Stefan Gustavson (stefan.gustavson@gmail.com)
+// The code in this file is distributed under the MIT license:
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
 
 #include <math.h>
 #include "edtaa3func.h"
 
-/*
- * Compute the local gradient at edge pixels using convolution filters.
- * The gradient is computed only at edge pixels. At other places in the
- * image, it is never used, and it's mostly zero anyway.
- */
+//  Compute the local gradient at edge pixels using convolution filters.
+//  The gradient is computed only at edge pixels. At other places in the
+//  image, it is never used, and it's mostly zero anyway.
 void computegradient(double *img, int w, int h, double *gx, double *gy)
 {
     int i,j,k,p,q;
@@ -87,15 +82,13 @@ void computegradient(double *img, int w, int h, double *gx, double *gy)
 	// around the image edge.) 2x2 kernels would be suitable for this.
 }
 
-/*
- * A somewhat tricky function to approximate the distance to an edge in a
- * certain pixel, with consideration to either the local gradient (gx,gy)
- * or the direction to the pixel (dx,dy) and the pixel greyscale value a.
- * The latter alternative, using (dx,dy), is the metric used by edtaa2().
- * Using a local estimate of the edge gradient (gx,gy) yields much better
- * accuracy at and near edges, and reduces the error even at distant pixels
- * provided that the gradient direction is accurately estimated.
- */
+//  A somewhat tricky function to approximate the distance to an edge in a
+//  certain pixel, with consideration to either the local gradient (gx,gy)
+//  or the direction to the pixel (dx,dy) and the pixel greyscale value a.
+//  The latter alternative, using (dx,dy), is the metric used by edtaa2().
+//  Using a local estimate of the edge gradient (gx,gy) yields much better
+//  accuracy at and near edges, and reduces the error even at distant pixels
+//  provided that the gradient direction is accurately estimated.
 double edgedf(double gx, double gy, double a)
 {
     double df, glength, temp, a1;
@@ -108,10 +101,9 @@ double edgedf(double gx, double gy, double a)
             gx = gx/glength;
             gy = gy/glength;
         }
-        /* Everything is symmetric wrt sign and transposition,
-         * so move to first octant (gx>=0, gy>=0, gx>=gy) to
-         * avoid handling all possible edge directions.
-         */
+// Everything is symmetric wrt sign and transposition,
+//  so move to first octant (gx>=0, gy>=0, gx>=gy) to
+//  avoid handling all possible edge directions.
         gx = fabs(gx);
         gy = fabs(gy);
         if(gx<gy) {
@@ -171,7 +163,7 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
   int changed;
   double epsilon = 1e-3;
 
-  /* Initialize index offsets for the current image width */
+  // Initialize index offsets for the current image width
   offset_u = -w;
   offset_ur = -w+1;
   offset_r = 1;
@@ -181,7 +173,7 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
   offset_l = -1;
   offset_lu = -w-1;
 
-  /* Initialize the distance images */
+  // Initialize the distance images
   for(i=0; i<w*h; i++) {
     distx[i] = 0; // At first, all pixels point to
     disty[i] = 0; // themselves as the closest known.
@@ -197,21 +189,21 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
     }
   }
 
-  /* Perform the transformation */
+  // Perform the transformation
   do
     {
       changed = 0;
 
-      /* Scan rows, except first row */
+      // Scan rows, except first row
       for(y=1; y<h; y++)
         {
 
-          /* move index to leftmost pixel of current row */
+          // move index to leftmost pixel of current row
           i = y*w;
 
-          /* scan right, propagate distances from above & left */
+          // scan right, propagate distances from above & left
 
-          /* Leftmost pixel is special, has no left neighbors */
+          // Leftmost pixel is special, has no left neighbors
           olddist = dist[i];
           if(olddist > 0) // If non-zero distance or not set yet
             {
@@ -246,7 +238,7 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
             }
           i++;
 
-          /* Middle pixels have all neighbors */
+          // Middle pixels have all neighbors
           for(x=1; x<w-1; x++, i++)
             {
               olddist = dist[i];
@@ -312,7 +304,7 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
                 }
             }
 
-          /* Rightmost pixel of row is special, has no right neighbors */
+          // Rightmost pixel of row is special, has no right neighbors
           olddist = dist[i];
           if(olddist > 0) // If not already zero distance
             {
@@ -361,11 +353,11 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
                 }
             }
 
-          /* Move index to second rightmost pixel of current row. */
-          /* Rightmost pixel is skipped, it has no right neighbor. */
+          // Move index to second rightmost pixel of current row.
+          // Rightmost pixel is skipped, it has no right neighbor.
           i = y*w + w-2;
 
-          /* scan left, propagate distance from right */
+          // scan left, propagate distance from right
           for(x=w-2; x>=0; x--, i--)
             {
               olddist = dist[i];
@@ -387,15 +379,15 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
             }
         }
 
-      /* Scan rows in reverse order, except last row */
+      // Scan rows in reverse order, except last row
       for(y=h-2; y>=0; y--)
         {
-          /* move index to rightmost pixel of current row */
+          // move index to rightmost pixel of current row
           i = y*w + w-1;
 
-          /* Scan left, propagate distances from below & right */
+          // Scan left, propagate distances from below & right
 
-          /* Rightmost pixel is special, has no right neighbors */
+          // Rightmost pixel is special, has no right neighbors
           olddist = dist[i];
           if(olddist > 0) // If not already zero distance
             {
@@ -430,7 +422,7 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
             }
           i--;
 
-          /* Middle pixels have all neighbors */
+          // Middle pixels have all neighbors
           for(x=w-2; x>0; x--, i--)
             {
               olddist = dist[i];
@@ -495,7 +487,7 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
                   changed = 1;
                 }
             }
-          /* Leftmost pixel is special, has no left neighbors */
+          // Leftmost pixel is special, has no left neighbors
           olddist = dist[i];
           if(olddist > 0) // If not already zero distance
             {
@@ -544,12 +536,12 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
                 }
             }
 
-          /* Move index to second leftmost pixel of current row. */
-          /* Leftmost pixel is skipped, it has no left neighbor. */
+          // Move index to second leftmost pixel of current row.
+          // Leftmost pixel is skipped, it has no left neighbor.
           i = y*w + 1;
           for(x=1; x<w; x++, i++)
             {
-              /* scan right, propagate distance from left */
+              // scan right, propagate distance from left
               olddist = dist[i];
               if(olddist <= 0) continue; // Already zero distance
 
@@ -571,6 +563,6 @@ void edtaa3(double *img, double *gx, double *gy, int w, int h, short *distx, sho
     }
   while(changed); // Sweep until no more updates are made
 
-  /* The transformation is completed. */
+  // The transformation is completed.
 
 }
